@@ -1,3 +1,32 @@
+// ============================================================================
+// Sentinel-2 5-Day NDSI Composite Generator | Google Earth Engine Script
+// 
+// Description:
+// This script uses Sentinel-2 Surface Reflectance (S2_SR) data to compute the 
+// Normalized Difference Snow Index (NDSI) over a user-defined Area of Interest (AOI).
+// It exports 5-day median NDSI composites and summary statistics including mean, 
+// standard deviation, and valid pixel count for each window.
+//
+// Features:
+// - Filters for <10% cloudy pixels
+// - Masks clouds using MSK_CLDPRB band
+// - Computes NDSI using B3 (Green) and B11 (SWIR)
+// - Outputs both images and region-reduced CSV-ready statistics
+//
+// Inputs:
+// - Sentinel-2 SR (COPERNICUS/S2_SR)
+// - User-defined AOI and date range
+//
+// Output:
+// - Exported GeoTIFFs of NDSI median composites per 5-day window
+// - Summary FeatureCollection with mean, stdDev, and count of valid NDSI pixels
+//
+// Author: Mary O'Flaherty
+// Adapted from GEE standard NDSI workflows and custom academic use
+// License: For research and educational purposes
+
+// ============================================================================
+
 // === AOI === Update As Needed
 //var AOI = ee.Geometry.Rectangle([-112, 44.5, -108.5, 46]);
 Map.centerObject(AOI, 8);
