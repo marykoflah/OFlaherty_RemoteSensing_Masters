@@ -1,0 +1,88 @@
+// === AOI === Update As Needed
+var AOI = ee.Geometry.Rectangle([-112, 44.5, -108.5, 46]);
+Map.centerObject(AOI, 8);
+
+// === Cloud mask + NDSI ===
+function maskClouds(image) {
+  return image.updateMask(image.select('MSK_CLDPRB').lt(5));
+}
+function addNDSI(image) {
+  var ndsi = image.normalizedDifference(['B3', 'B11']).rename('NDSI');
+  return image.addBands(ndsi);
+}
+
+// === Run for a single month === YEAR-MT-DY
+//var startDate = ee.Date('2024-09-01');
+//var endDate = ee.Date('2024-09-30');
+var stepDays = 5;
+var nSteps = endDate.difference(startDate, 'day').divide(stepDays).floor();
+var sequence = ee.List.sequence(0, nSteps.subtract(1));
+
+// === Evaluate monthly loop ===
+sequence.evaluate(function(indices) {
+  var featureList = [];
+
+  indices.forEach(function(i) {
+    var start = startDate.advance(i * stepDays, 'day');
+    var end = start.advance(stepDays, 'day');
+    var dateStr = start.format('YYYY-MM-dd').getInfo();
+    var fileStr = start.format('YYYY_MM_dd').getInfo();
+
+    var collection = ee.ImageCollection('COPERNICUS/S2_SR')
+      .filterDate(start, end)
+      .filterBounds(AOI)
+      .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 10))
+      .map(maskClouds)
+      .map(addNDSI);
+
+    var size = collection.size().getInfo();
+
+    if (size > 0) {
+      var ndsiImage = collection.select('NDSI').median().clip(AOI);
+
+      Export.image.toDrive({
+        image: ndsiImage,
+        description: 'NDSI_' + fileStr,
+        folder: 'NDSI_Exports',
+        fileNamePrefix: 'NDSI_' + fileStr,
+        region: AOI,
+        scale: 30,
+        maxPixels: 1e13
+      });
+
+      var stats = ndsiImage.reduceRegion({
+        reducer: ee.Reducer.mean()
+                  .combine({reducer2: ee.Reducer.stdDev(), sharedInputs: true})
+                  .combine({reducer2: ee.Reducer.count(), sharedInputs: true}),
+        geometry: AOI,
+        scale: 30,
+        maxPixels: 1e13
+      });
+
+      featureList.push(ee.Feature(null, {
+        'start_date': dateStr,
+        'mean_ndsi': stats.get('NDSI_mean'),
+        'stddev_ndsi': stats.get('NDSI_stdDev'),
+        'valid_pixel_count': stats.get('NDSI_count')
+      }));
+    } else {
+      print('⚠️ No valid images for window:', dateStr);
+      featureList.push(ee.Feature(null, {
+        'start_date': dateStr,
+        'mean_ndsi': null,
+        'stddev_ndsi': null,
+        'valid_pixel_count': 0
+      }));
+    }
+  });
+
+  var fc = ee.FeatureCollection(featureList);
+  print('📄 Monthly NDSI Summary Table:', fc);
+
+//  Export.table.toDrive({
+//    collection: fc,
+//    description: 'NDSI_5Day_MonthYear_CSV',
+//    folder: 'NDSI_Exports',
+//    fileFormat: 'CSV'
+  });
+});
