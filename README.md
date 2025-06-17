@@ -36,8 +36,11 @@ var endDate = ee.Date('YYYY-MM-DD');
 
 ## 🛠️ Author
 
-* **Original GEE Logic**: Adapted by Mary O'Flaherty
-* **Base Logic Inspired By**: Common GEE NDSI time series workflows
+- **Script Modified By**: Mary O'Flaherty  
+- **Based On**: Standardized NDSI time series processing workflows using Google Earth Engine  
+- **Cloud Masking & NDSI Logic**: Adapted from Sentinel-2 Surface Reflectance documentation and best practices shared in the GEE developer community  
+- **Purpose**: Created for academic research on snow cover dynamics and remote sensing integration
+
 
 ## 📄 License
 
