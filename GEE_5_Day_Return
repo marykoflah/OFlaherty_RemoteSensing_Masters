@@ -1,5 +1,5 @@
 // === AOI === Update As Needed
-var AOI = ee.Geometry.Rectangle([-112, 44.5, -108.5, 46]);
+//var AOI = ee.Geometry.Rectangle([-112, 44.5, -108.5, 46]);
 Map.centerObject(AOI, 8);
 
 // === Cloud mask + NDSI ===
@@ -11,9 +11,9 @@ function addNDSI(image) {
   return image.addBands(ndsi);
 }
 
-// === Run for a single month === YEAR-MT-DY
-//var startDate = ee.Date('2024-09-01');
-//var endDate = ee.Date('2024-09-30');
+// === Run for a single month === YEAR-MONTH-DAY 
+//var startDate = ee.Date('YYYY-MM-DD');
+//var endDate = ee.Date('YYYY-MM-DD');
 var stepDays = 5;
 var nSteps = endDate.difference(startDate, 'day').divide(stepDays).floor();
 var sequence = ee.List.sequence(0, nSteps.subtract(1));
