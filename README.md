@@ -110,6 +110,4 @@ end_dateapi   <- "YYYY-MM-DD"
 
 This script is intended for academic and non-commercial research use. Please credit appropriately.
 
-```
-
 ## 👾 README Created with the help of ChatGPT
